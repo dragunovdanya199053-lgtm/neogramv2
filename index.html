@@ -163,29 +163,6 @@
   .typing-indicator span:nth-child(3){animation-delay:.3s;}
   @keyframes typing{0%,80%,100%{transform:scale(.8);opacity:.5;}40%{transform:scale(1);opacity:1;}}
   
-  /* MOBILE */
-  @media(max-width:768px){
-    #sidebar{position:fixed;inset:0;width:100%;z-index:50;transform:translateX(0);}
-    #sidebar.hidden-mobile{transform:translateX(-100%);}
-    #chat-area{position:fixed;inset:0;z-index:40;}
-    #back-btn{display:flex!important;}
-    .app-layout{position:relative;}
-  }
-  
-  /* SETTINGS */
-  .settings-row{display:flex;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid var(--border);}
-  .settings-row:last-child{border-bottom:none;}
-  .toggle{width:44px;height:24px;background:var(--border);border-radius:999px;position:relative;cursor:pointer;transition:.3s;}
-  .toggle.on{background:var(--accent);}
-  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.3s;}
-  .toggle.on::after{left:23px;}
-
-  /* EMOJI PICKER */
-  .emoji-bar{display:flex;gap:.3rem;flex-wrap:wrap;padding:.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:12px;position:absolute;bottom:70px;right:1rem;z-index:10;max-width:280px;}
-  .emoji-bar.hidden{display:none;}
-  .emoji-btn-pill{font-size:1.3rem;cursor:pointer;padding:.2rem .3rem;border-radius:6px;transition:.15s;}
-  .emoji-btn-pill:hover{background:var(--bg3);}
-
   /* RECORDING UI */
   .rec-bar{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:var(--bg2);border-top:1px solid var(--red);}
   .rec-time{font-family:var(--font-mono);font-size:.9rem;color:var(--red);}
@@ -296,7 +273,16 @@
           <i class="fa fa-circle" style="color:var(--red);font-size:.6rem;animation:pulse 1s infinite"></i>
           <span class="rec-time" id="rec-time">0:00</span>
           <div class="rec-wave" id="rec-wave"></div>
-          <button style="background:transparent;border:none;color:var(--text2);cursor:pointer;" onclick="cancelRecording()"><i class="fa fa-trash"></i></button>
+          
+          <!-- Кнопка ОТМЕНА -->
+          <button style="background:transparent;border:none;color:var(--text2);cursor:pointer;margin-right:8px;" onclick="cancelRecording()">
+            <i class="fa fa-trash"></i>
+          </button>
+          
+          <!-- Кнопка ОТПРАВИТЬ -->
+          <button style="background:var(--green);color:#fff;border:none;border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="stopAndSendRecording()">
+            <i class="fa fa-paper-plane"></i>
+          </button>
         </div>
         <div id="input-area">
           <button class="attach-btn" onclick="toggleAttachMenu()" title="Прикрепить"><i class="fa fa-paperclip"></i></button>
@@ -352,6 +338,17 @@
     <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem;">
       <input class="ng-input" id="set-name" placeholder="Отображаемое имя"/>
       <textarea class="ng-input" id="set-bio" placeholder="О себе..." rows="2" style="resize:none;"></textarea>
+      
+      <!-- АВАТАРКА -->
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <div id="preview-avatar" class="avatar" style="width:64px;height:64px;font-size:1.4rem;cursor:pointer;" onclick="$('set-avatar-file').click()">👤</div>
+        <div>
+          <button onclick="$('set-avatar-file').click()" class="ng-btn" style="width:auto;padding:.5rem 1rem;">Загрузить аватарку</button>
+          <input type="file" id="set-avatar-file" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+          <div id="avatar-status" style="font-size:.75rem;color:var(--text2);margin-top:4px;"></div>
+        </div>
+      </div>
+
       <button class="ng-btn" onclick="saveSettings()">Сохранить профиль</button>
     </div>
     <div>
@@ -386,7 +383,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstati
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js';
 
 // ═══════════════════════════════════════════════════
-// 🔥 СВЕЖИЙ FIREBASE CONFIG ИЗ КОНСОЛИ (2026)
+// 🔥 ТВОЙ FIREBASE CONFIG
 // ═══════════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyD5Gs94nyTALXWpIjq6_lHq1lyOV5thD2I",
@@ -401,13 +398,12 @@ const firebaseConfig = {
 const VAPID_KEY = "BLfhDH1-tH3-Em_PeU6cdfteGSRUTUbma6wd39BPtoOgVfCjCtu1TwnUXrG8CpM7LRv6rVCxyNpaXgXBogj44bs";
 // ═══════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 const storage = getStorage(fbApp);
 let messaging = null;
-try { messaging = getMessaging(fbApp); } catch(e) {}
+try { messaging = getMessaging(fbApp); } catch(e){}
 
 // ── globals ──
 let currentUser = null;
@@ -461,7 +457,7 @@ window.switchTab = mode => {
   $('tab-reg').classList.toggle('active', mode==='register');
 };
 
-// ── register (ИСПРАВЛЕННАЯ ВЕРСИЯ — теперь точно создаёт документ в users) ──
+// ── register (исправленная) ──
 window.doRegister = async () => {
   const name = $('reg-name').value.trim();
   const rawUser = $('reg-user').value.trim().toLowerCase();
@@ -491,7 +487,6 @@ window.doRegister = async () => {
   btn.textContent = 'Создание аккаунта...';
 
   try {
-    // Проверяем, занят ли username
     const snap = await getDocs(query(collection(db, 'users'), where('username', '==', user)));
     if (!snap.empty) {
       errEl.textContent = '@' + user + ' уже занят';
@@ -501,11 +496,9 @@ window.doRegister = async () => {
       return;
     }
 
-    // Создаём пользователя в Auth
     const cred = await createUserWithEmailAndPassword(auth, user + '@neogram.app', pass);
-    console.log('✅ Auth создан, uid =', cred.user.uid);
+    console.log('✅ Auth создан');
 
-    // Создаём документ в Firestore
     await setDoc(doc(db, 'users', cred.user.uid), {
       uid: cred.user.uid,
       username: user,
@@ -524,7 +517,7 @@ window.doRegister = async () => {
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
     toast('Аккаунт создан! Добро пожаловать');
-    loadApp(); // сразу переходим в приложение
+    loadApp();
   } catch (e) {
     console.error('Ошибка регистрации:', e);
     errEl.textContent = e.code === 'auth/email-already-in-use' ? 'Username занят' : e.message;
@@ -555,7 +548,7 @@ window.doLogin = async () => {
 
 // ── logout ──
 window.doLogout = async () => {
-  if(currentUser) await updateDoc(doc(db,'users',currentUser.uid),{online:false,lastSeen:serverTimestamp()});
+  if(currentUser) await updateDoc(doc(db,'users',currentUser.uid),{online:false,lastSeen:serverTimestamp()}).catch(()=>{});
   if(messagesUnsub) messagesUnsub();
   if(chatsUnsub) chatsUnsub();
   await signOut(auth);
@@ -585,6 +578,9 @@ async function loadApp() {
   $('my-username').textContent = '@'+(uData.username||'');
   $('my-avatar').textContent = initials(uData.displayName||currentUser.displayName||'U');
   $('my-avatar').style.background = uData.avatarColor||'var(--accent)';
+  if(uData.avatar) {
+    $('my-avatar').innerHTML = `<img src="${uData.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+  }
   $('set-name').value = uData.displayName||'';
   $('set-bio').value = uData.bio||'';
   loadChats();
@@ -678,20 +674,21 @@ window.goBack = () => {
   $('sidebar').classList.remove('hidden-mobile');
 };
 
-// ── messages ──
+// ── messages (исправленные даты) ──
 function appendMessage(data, id) {
   const mine = data.senderId === currentUser.uid;
   const msgEl = document.getElementById('msg-'+id);
   if(msgEl) return;
 
-  // Date separator
   const ts = data.createdAt;
   if(ts) {
     const dateStr = fmtDate(ts);
-    const lastSep = $('messages').querySelector('.date-sep:last-of-type');
-    if(!lastSep||lastSep.dataset.date!==dateStr) {
+    const existing = Array.from($('messages').querySelectorAll('.date-sep'));
+    const lastDate = existing.length ? existing[existing.length-1].dataset.date : '';
+    if(lastDate !== dateStr) {
       const sep = document.createElement('div');
-      sep.className='date-sep'; sep.dataset.date=dateStr;
+      sep.className='date-sep';
+      sep.dataset.date = dateStr;
       sep.innerHTML=`<span>${dateStr}</span>`;
       $('messages').appendChild(sep);
     }
@@ -783,7 +780,6 @@ window.autoResize = el => {
   el.style.height=Math.min(el.scrollHeight,120)+'px';
 };
 
-// ── typing ──
 window.handleTyping = () => {
   if(!currentChatId) return;
   clearTimeout(typingTimeout);
@@ -887,6 +883,13 @@ function stopRecUI() {
 }
 const formatDur = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 
+// НОВАЯ ФУНКЦИЯ — ОТПРАВИТЬ ГОЛОСОВОЕ
+window.stopAndSendRecording = () => {
+  if(mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+  }
+};
+
 window.playAudio = (url, btn) => {
   if(audioPlayer&&!audioPlayer.paused){audioPlayer.pause();return;}
   audioPlayer = new Audio(url);
@@ -942,6 +945,7 @@ window.searchUsers = async val => {
           lastMessageAt:serverTimestamp(),
           unread:{}
         });
+        loadChats(); // ← обновляем список
       }
       await openChat(cid, u.uid, u);
     };
@@ -976,6 +980,7 @@ window.openContacts = async () => {
       if(!chatSnap.exists()){
         const me=(await getDoc(doc(db,'users',currentUser.uid))).data();
         await setDoc(doc(db,'chats',cid),{members:[currentUser.uid,u.uid],memberNames:[me?.displayName||'',u.displayName||''],lastMessage:'',lastMessageAt:serverTimestamp(),unread:{}});
+        loadChats(); // ← обновляем список
       }
       await openChat(cid,u.uid,u);
     };
@@ -992,8 +997,30 @@ window.saveSettings = async () => {
   await updateDoc(doc(db,'users',currentUser.uid),{displayName:name,bio});
   await updateProfile(currentUser,{displayName:name});
   $('my-name').textContent = name;
-  $('my-avatar').textContent = initials(name);
   toast('Профиль сохранён');
+};
+
+// ── АВАТАРКА ──
+window.uploadAvatar = async (input) => {
+  const file = input.files[0];
+  if(!file) return;
+  const status = $('avatar-status');
+  status.textContent = 'Загрузка...';
+  try {
+    const storRef = ref(storage, `avatars/${currentUser.uid}_${Date.now()}`);
+    const snap = await uploadBytes(storRef, file);
+    const url = await getDownloadURL(snap.ref);
+    
+    await updateDoc(doc(db,'users',currentUser.uid), {avatar: url});
+    await updateProfile(currentUser, {photoURL: url});
+    
+    $('preview-avatar').innerHTML = `<img src="${url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    status.textContent = '✓ Аватарка обновлена';
+    toast('Аватарка сохранена');
+  } catch(e) {
+    status.textContent = 'Ошибка';
+    toast('Ошибка загрузки аватарки');
+  }
 };
 
 // ── notifications ──
@@ -1014,7 +1041,6 @@ window.toggleNotifications = async el => {
   } catch(e){ toast('Ошибка: '+e.message); }
 };
 
-// ── chat info modal ──
 window.openChatInfo = () => {
   if(!currentChatUser) return;
   toast(`@${currentChatUser.username||'unknown'}`);
