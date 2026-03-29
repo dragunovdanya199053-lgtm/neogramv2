@@ -461,33 +461,78 @@ window.switchTab = mode => {
   $('tab-reg').classList.toggle('active', mode==='register');
 };
 
-// ── register ──
+// ── register (ИСПРАВЛЕННАЯ ВЕРСИЯ — теперь точно создаёт документ в users) ──
 window.doRegister = async () => {
   const name = $('reg-name').value.trim();
-  const user = $('reg-user').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+  const rawUser = $('reg-user').value.trim().toLowerCase();
+  const user = rawUser.replace(/[^a-z0-9_]/g, '');
   const pass = $('reg-pass').value;
   const errEl = $('reg-err');
-  errEl.style.display='none';
-  if(!name||!user||!pass){errEl.textContent='Заполните все поля';errEl.style.display='block';return;}
-  if(pass.length<6){errEl.textContent='Пароль минимум 6 символов';errEl.style.display='block';return;}
-  if(user.length<3){errEl.textContent='Username минимум 3 символа';errEl.style.display='block';return;}
-  const btn = document.querySelector('#register-form .ng-btn');
-  btn.disabled=true; btn.textContent='Проверка...';
-  try {
-    const snap = await getDocs(query(collection(db,'users'),where('username','==',user)));
-    if(!snap.empty){errEl.textContent='@'+user+' уже занят';errEl.style.display='block';btn.disabled=false;btn.textContent='Создать аккаунт';return;}
-    const cred = await createUserWithEmailAndPassword(auth, user+'@neogram.app', pass);
-    await updateProfile(cred.user,{displayName:name});
-    await setDoc(doc(db,'users',cred.user.uid),{
-      uid:cred.user.uid, displayName:name, username:user,
-      bio:'', avatarColor:avatarColor(name),
-      createdAt:serverTimestamp(), lastSeen:serverTimestamp(), online:true
-    });
-  } catch(e) {
-    errEl.textContent = e.code==='auth/email-already-in-use'?'Username занят':e.message;
-    errEl.style.display='block';
+  errEl.style.display = 'none';
+
+  if (!name || !user || !pass) {
+    errEl.textContent = 'Заполните все поля';
+    errEl.style.display = 'block';
+    return;
   }
-  btn.disabled=false; btn.textContent='Создать аккаунт';
+  if (pass.length < 6) {
+    errEl.textContent = 'Пароль минимум 6 символов';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (user.length < 3) {
+    errEl.textContent = 'Username минимум 3 символа';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.querySelector('#register-form .ng-btn');
+  btn.disabled = true;
+  btn.textContent = 'Создание аккаунта...';
+
+  try {
+    // Проверяем, занят ли username
+    const snap = await getDocs(query(collection(db, 'users'), where('username', '==', user)));
+    if (!snap.empty) {
+      errEl.textContent = '@' + user + ' уже занят';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Создать аккаунт';
+      return;
+    }
+
+    // Создаём пользователя в Auth
+    const cred = await createUserWithEmailAndPassword(auth, user + '@neogram.app', pass);
+    console.log('✅ Auth создан, uid =', cred.user.uid);
+
+    // Создаём документ в Firestore
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      uid: cred.user.uid,
+      username: user,
+      displayName: name,
+      bio: '',
+      avatarColor: avatarColor(name),
+      createdAt: serverTimestamp(),
+      lastSeen: serverTimestamp(),
+      online: true
+    });
+    console.log('✅ Документ users создан');
+
+    await updateProfile(cred.user, { displayName: name });
+
+    currentUser = cred.user;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+    toast('Аккаунт создан! Добро пожаловать');
+    loadApp(); // сразу переходим в приложение
+  } catch (e) {
+    console.error('Ошибка регистрации:', e);
+    errEl.textContent = e.code === 'auth/email-already-in-use' ? 'Username занят' : e.message;
+    errEl.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Создать аккаунт';
 };
 
 // ── login ──
