@@ -156,13 +156,6 @@
   #toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(2rem);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:.7rem 1.25rem;font-size:.85rem;z-index:500;opacity:0;transition:.3s;white-space:nowrap;pointer-events:none;max-width:90vw;}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   
-  /* TYPING */
-  .typing-indicator{display:flex;gap:4px;align-items:center;padding:.5rem .75rem;background:var(--bubble-other);border-radius:18px;border-bottom-left-radius:4px;width:fit-content;}
-  .typing-indicator span{width:6px;height:6px;background:var(--text2);border-radius:50%;animation:typing .8s infinite;}
-  .typing-indicator span:nth-child(2){animation-delay:.15s;}
-  .typing-indicator span:nth-child(3){animation-delay:.3s;}
-  @keyframes typing{0%,80%,100%{transform:scale(.8);opacity:.5;}40%{transform:scale(1);opacity:1;}}
-  
   /* RECORDING UI */
   .rec-bar{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:var(--bg2);border-top:1px solid var(--red);}
   .rec-time{font-family:var(--font-mono);font-size:.9rem;color:var(--red);}
@@ -273,13 +266,9 @@
           <i class="fa fa-circle" style="color:var(--red);font-size:.6rem;animation:pulse 1s infinite"></i>
           <span class="rec-time" id="rec-time">0:00</span>
           <div class="rec-wave" id="rec-wave"></div>
-          
-          <!-- Кнопка ОТМЕНА -->
           <button style="background:transparent;border:none;color:var(--text2);cursor:pointer;margin-right:8px;" onclick="cancelRecording()">
             <i class="fa fa-trash"></i>
           </button>
-          
-          <!-- Кнопка ОТПРАВИТЬ -->
           <button style="background:var(--green);color:#fff;border:none;border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="stopAndSendRecording()">
             <i class="fa fa-paper-plane"></i>
           </button>
@@ -338,8 +327,6 @@
     <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem;">
       <input class="ng-input" id="set-name" placeholder="Отображаемое имя"/>
       <textarea class="ng-input" id="set-bio" placeholder="О себе..." rows="2" style="resize:none;"></textarea>
-      
-      <!-- АВАТАРКА -->
       <div style="display:flex;align-items:center;gap:1rem;">
         <div id="preview-avatar" class="avatar" style="width:64px;height:64px;font-size:1.4rem;cursor:pointer;" onclick="$('set-avatar-file').click()">👤</div>
         <div>
@@ -348,7 +335,6 @@
           <div id="avatar-status" style="font-size:.75rem;color:var(--text2);margin-top:4px;"></div>
         </div>
       </div>
-
       <button class="ng-btn" onclick="saveSettings()">Сохранить профиль</button>
     </div>
     <div>
@@ -382,9 +368,6 @@ import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateD
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js';
 
-// ═══════════════════════════════════════════════════
-// 🔥 ТВОЙ FIREBASE CONFIG
-// ═══════════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyD5Gs94nyTALXWpIjq6_lHq1lyOV5thD2I",
   authDomain: "neogram-a4e8a.firebaseapp.com",
@@ -396,7 +379,6 @@ const firebaseConfig = {
 };
 
 const VAPID_KEY = "BLfhDH1-tH3-Em_PeU6cdfteGSRUTUbma6wd39BPtoOgVfCjCtu1TwnUXrG8CpM7LRv6rVCxyNpaXgXBogj44bs";
-// ═══════════════════════════════════════════════════
 
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
@@ -405,7 +387,6 @@ const storage = getStorage(fbApp);
 let messaging = null;
 try { messaging = getMessaging(fbApp); } catch(e){}
 
-// ── globals ──
 let currentUser = null;
 let currentChatId = null;
 let currentChatUser = null;
@@ -418,20 +399,16 @@ let recSeconds = 0;
 let typingTimeout = null;
 let allChats = [];
 
-// ── helpers ──
 const $ = id => document.getElementById(id);
-const toast = (msg, dur=3000) => {
+const toast = (msg, dur=4000) => {
   const t = $('toast');
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), dur);
 };
+
 const initials = name => name ? name.slice(0,2).toUpperCase() : '?';
-const fmtTime = ts => {
-  if(!ts) return '';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
-};
+const fmtTime = ts => ts ? (ts.toDate ? ts.toDate() : new Date(ts)).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'}) : '';
 const fmtDate = ts => {
   if(!ts) return '';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -449,7 +426,6 @@ const avatarColor = name => {
   return cols[Math.abs(h)%cols.length];
 };
 
-// ── auth tab ──
 window.switchTab = mode => {
   $('login-form').style.display = mode==='login'?'flex':'none';
   $('register-form').style.display = mode==='register'?'flex':'none';
@@ -457,7 +433,6 @@ window.switchTab = mode => {
   $('tab-reg').classList.toggle('active', mode==='register');
 };
 
-// ── register (исправленная) ──
 window.doRegister = async () => {
   const name = $('reg-name').value.trim();
   const rawUser = $('reg-user').value.trim().toLowerCase();
@@ -497,7 +472,6 @@ window.doRegister = async () => {
     }
 
     const cred = await createUserWithEmailAndPassword(auth, user + '@neogram.app', pass);
-    console.log('✅ Auth создан');
 
     await setDoc(doc(db, 'users', cred.user.uid), {
       uid: cred.user.uid,
@@ -509,7 +483,6 @@ window.doRegister = async () => {
       lastSeen: serverTimestamp(),
       online: true
     });
-    console.log('✅ Документ users создан');
 
     await updateProfile(cred.user, { displayName: name });
 
@@ -528,7 +501,6 @@ window.doRegister = async () => {
   btn.textContent = 'Создать аккаунт';
 };
 
-// ── login ──
 window.doLogin = async () => {
   const user = $('login-user').value.trim().toLowerCase().replace('@','');
   const pass = $('login-pass').value;
@@ -546,7 +518,6 @@ window.doLogin = async () => {
   btn.disabled=false; btn.textContent='Войти';
 };
 
-// ── logout ──
 window.doLogout = async () => {
   if(currentUser) await updateDoc(doc(db,'users',currentUser.uid),{online:false,lastSeen:serverTimestamp()}).catch(()=>{});
   if(messagesUnsub) messagesUnsub();
@@ -555,7 +526,6 @@ window.doLogout = async () => {
   closeModal('settings-modal');
 };
 
-// ── auth state ──
 onAuthStateChanged(auth, async user => {
   if(user) {
     currentUser = user;
@@ -568,7 +538,6 @@ onAuthStateChanged(auth, async user => {
   }
 });
 
-// ── load app ──
 async function loadApp() {
   $('auth-screen').style.display='none';
   $('app').classList.add('visible');
@@ -576,11 +545,10 @@ async function loadApp() {
   const uData = uSnap.data()||{};
   $('my-name').textContent = uData.displayName||currentUser.displayName||'User';
   $('my-username').textContent = '@'+(uData.username||'');
-  $('my-avatar').textContent = initials(uData.displayName||currentUser.displayName||'U');
+  $('my-avatar').innerHTML = uData.avatar 
+    ? `<img src="${uData.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` 
+    : `<span>${initials(uData.displayName||currentUser.displayName||'U')}</span>`;
   $('my-avatar').style.background = uData.avatarColor||'var(--accent)';
-  if(uData.avatar) {
-    $('my-avatar').innerHTML = `<img src="${uData.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-  }
   $('set-name').value = uData.displayName||'';
   $('set-bio').value = uData.bio||'';
   loadChats();
@@ -588,7 +556,6 @@ async function loadApp() {
   registerSW();
 }
 
-// ── chats ──
 function loadChats() {
   if(chatsUnsub) chatsUnsub();
   const q = query(collection(db,'chats'),where('members','array-contains',currentUser.uid),orderBy('lastMessageAt','desc'));
@@ -601,11 +568,9 @@ function loadChats() {
 
 async function renderChats(chats) {
   const el = $('chat-list');
-  el.innerHTML='';
-  if(chats.length===0){
-    el.innerHTML='<div style="padding:2rem;text-align:center;color:var(--text2);font-size:.85rem">Нет чатов. Начните новый!</div>';
-    return;
-  }
+  el.innerHTML = chats.length === 0 
+    ? '<div style="padding:2rem;text-align:center;color:var(--text2);font-size:.85rem">Нет чатов. Начните новый!</div>' 
+    : '';
   for(const chat of chats) {
     const otherId = chat.members.find(m=>m!==currentUser.uid);
     let otherUser = {displayName:'Пользователь',username:'unknown',avatarColor:'var(--accent)'};
@@ -614,7 +579,7 @@ async function renderChats(chats) {
       if(os.exists()) otherUser = os.data();
     } catch(e){}
     const item = document.createElement('div');
-    item.className = 'chat-item'+(currentChatId===chat.id?' active':'');
+    item.className = 'chat-item' + (currentChatId===chat.id?' active':'');
     item.dataset.chatId = chat.id;
     item.onclick = () => openChat(chat.id, otherId, otherUser);
     const unread = (chat.unread||{})[currentUser.uid]||0;
@@ -639,24 +604,22 @@ window.filterChats = val => {
   renderChats(v ? allChats.filter(c=>(c.memberNames||[]).some(n=>n.toLowerCase().includes(v))) : allChats);
 };
 
-// ── open chat ──
 async function openChat(cid, otherId, otherUser) {
-  if(currentChatId===cid) {
-    if(window.innerWidth<=768) { $('sidebar').classList.add('hidden-mobile'); }
-    return;
-  }
   currentChatId = cid;
   currentChatUser = {id:otherId,...otherUser};
-  if(window.innerWidth<=768) $('sidebar').classList.add('hidden-mobile');
+
+  // Автоскрытие бокового меню на мобильных
+  if(window.innerWidth <= 768) {
+    $('sidebar').classList.add('hidden-mobile');
+    $('back-btn').style.display = 'flex';
+  }
+
   $('chat-placeholder').style.display='none';
   $('active-chat').style.display='flex';
-  $('chat-avatar').textContent = initials(otherUser.displayName);
-  $('chat-avatar').style.background = otherUser.avatarColor||'var(--accent)';
+  $('chat-avatar').innerHTML = `<span style="background:${otherUser.avatarColor||'var(--accent)'};">${initials(otherUser.displayName)}</span>`;
   $('chat-name').textContent = otherUser.displayName;
   $('chat-status').textContent = otherUser.online?'онлайн':'был(а) недавно';
-  document.querySelectorAll('.chat-item').forEach(el=>{
-    el.classList.toggle('active', el.dataset.chatId===cid);
-  });
+
   if(messagesUnsub) messagesUnsub();
   $('messages').innerHTML='';
   await updateDoc(doc(db,'chats',cid),{[`unread.${currentUser.uid}`]:0}).catch(()=>{});
@@ -672,13 +635,12 @@ async function openChat(cid, otherId, otherUser) {
 
 window.goBack = () => {
   $('sidebar').classList.remove('hidden-mobile');
+  $('back-btn').style.display = 'none';
 };
 
-// ── messages (исправленные даты) ──
 function appendMessage(data, id) {
   const mine = data.senderId === currentUser.uid;
-  const msgEl = document.getElementById('msg-'+id);
-  if(msgEl) return;
+  if(document.getElementById('msg-'+id)) return;
 
   const ts = data.createdAt;
   if(ts) {
@@ -747,7 +709,6 @@ function scrollToBottom() {
 }
 const escHtml = s => s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') : '';
 
-// ── send message ──
 window.sendMessage = async () => {
   if(!currentChatId) return;
   const text = $('msg-input').value.trim();
@@ -786,7 +747,6 @@ window.handleTyping = () => {
   typingTimeout = setTimeout(()=>{}, 2000);
 };
 
-// ── attach menu ──
 window.toggleAttachMenu = () => $('attach-menu').classList.toggle('open');
 window.closeAttachMenu = () => $('attach-menu').classList.remove('open');
 window.triggerFile = type => {
@@ -794,30 +754,37 @@ window.triggerFile = type => {
   $(type==='image'?'file-image':'file-doc').click();
 };
 
-// ── upload file ──
 window.uploadFile = async (input, type) => {
+  if(!currentChatId) {
+    toast('Сначала откройте чат!');
+    return;
+  }
   const file = input.files[0];
   if(!file) return;
-  if(file.size>20*1024*1024){toast('Файл слишком большой (макс. 20 МБ)');return;}
-  toast('Загрузка...');
+  if(file.size > 30*1024*1024) { toast('Файл слишком большой (макс. 30 МБ)'); return; }
+
+  toast('Загрузка файла...');
   try {
-    const storRef = ref(storage,`chats/${currentChatId}/${Date.now()}_${file.name}`);
+    const storRef = ref(storage, `chats/${currentChatId}/${Date.now()}_${file.name}`);
     const snap = await uploadBytes(storRef, file);
     const url = await getDownloadURL(snap.ref);
+
     let msgData = {senderId:currentUser.uid, url, createdAt:serverTimestamp()};
     if(type==='image') {
-      msgData.type='image';
-      await pushMessage(msgData,'📷 Фото');
+      msgData.type = 'image';
+      await pushMessage(msgData, '📷 Фото/Видео');
     } else {
       msgData = {...msgData, type:'file', fileName:file.name, fileSize:file.size};
-      await pushMessage(msgData,'📎 '+file.name);
+      await pushMessage(msgData, '📎 ' + file.name);
     }
     toast('Файл отправлен');
-  } catch(e) { toast('Ошибка загрузки: '+e.message); }
-  input.value='';
+  } catch(e) {
+    console.error('Ошибка загрузки:', e);
+    toast('Ошибка загрузки: ' + (e.message || 'Проверьте Firebase Storage правила'));
+  }
+  input.value = '';
 };
 
-// ── location ──
 window.shareLocation = () => {
   closeAttachMenu();
   if(!navigator.geolocation){toast('Геолокация недоступна');return;}
@@ -827,7 +794,6 @@ window.shareLocation = () => {
   }, ()=>toast('Нет доступа к геолокации'));
 };
 
-// ── voice recording ──
 let audioPlayer = null;
 window.toggleRecording = async () => {
   if(mediaRecorder&&mediaRecorder.state==='recording') {
@@ -883,7 +849,6 @@ function stopRecUI() {
 }
 const formatDur = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 
-// НОВАЯ ФУНКЦИЯ — ОТПРАВИТЬ ГОЛОСОВОЕ
 window.stopAndSendRecording = () => {
   if(mediaRecorder && mediaRecorder.state === 'recording') {
     mediaRecorder.stop();
@@ -898,14 +863,12 @@ window.playAudio = (url, btn) => {
   audioPlayer.onended = ()=>{btn.innerHTML='<i class="fa fa-play"></i>';};
 };
 
-// ── image viewer ──
 window.openViewer = url => {
   $('viewer-img').src=url;
   $('img-viewer').classList.remove('hidden');
 };
 window.closeViewer = () => $('img-viewer').classList.add('hidden');
 
-// ── new chat / user search ──
 window.openNewChat = () => {
   $('user-results').innerHTML='';
   $('user-search').value='';
@@ -945,7 +908,7 @@ window.searchUsers = async val => {
           lastMessageAt:serverTimestamp(),
           unread:{}
         });
-        loadChats(); // ← обновляем список
+        loadChats(); // ← сразу обновляем список
       }
       await openChat(cid, u.uid, u);
     };
@@ -954,7 +917,6 @@ window.searchUsers = async val => {
   if(el.innerHTML==='') el.innerHTML='<div style="padding:1rem;text-align:center;color:var(--text2)">Пользователи не найдены</div>';
 };
 
-// ── contacts ──
 window.openContacts = async () => {
   $('contacts-modal').classList.remove('hidden');
   const el = $('contacts-list');
@@ -980,7 +942,7 @@ window.openContacts = async () => {
       if(!chatSnap.exists()){
         const me=(await getDoc(doc(db,'users',currentUser.uid))).data();
         await setDoc(doc(db,'chats',cid),{members:[currentUser.uid,u.uid],memberNames:[me?.displayName||'',u.displayName||''],lastMessage:'',lastMessageAt:serverTimestamp(),unread:{}});
-        loadChats(); // ← обновляем список
+        loadChats();
       }
       await openChat(cid,u.uid,u);
     };
@@ -988,7 +950,6 @@ window.openContacts = async () => {
   });
 };
 
-// ── settings ──
 window.openSettings = () => $('settings-modal').classList.remove('hidden');
 window.saveSettings = async () => {
   const name = $('set-name').value.trim();
@@ -1000,7 +961,6 @@ window.saveSettings = async () => {
   toast('Профиль сохранён');
 };
 
-// ── АВАТАРКА ──
 window.uploadAvatar = async (input) => {
   const file = input.files[0];
   if(!file) return;
@@ -1010,10 +970,8 @@ window.uploadAvatar = async (input) => {
     const storRef = ref(storage, `avatars/${currentUser.uid}_${Date.now()}`);
     const snap = await uploadBytes(storRef, file);
     const url = await getDownloadURL(snap.ref);
-    
     await updateDoc(doc(db,'users',currentUser.uid), {avatar: url});
     await updateProfile(currentUser, {photoURL: url});
-    
     $('preview-avatar').innerHTML = `<img src="${url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
     status.textContent = '✓ Аватарка обновлена';
     toast('Аватарка сохранена');
@@ -1023,7 +981,6 @@ window.uploadAvatar = async (input) => {
   }
 };
 
-// ── notifications ──
 window.toggleNotifications = async el => {
   if(el.classList.contains('on')) { el.classList.remove('on'); return; }
   if(!messaging){toast('Push недоступны в этом браузере');return;}
@@ -1046,7 +1003,6 @@ window.openChatInfo = () => {
   toast(`@${currentChatUser.username||'unknown'}`);
 };
 
-// ── emoji ──
 const EMOJIS = ['😀','😂','😍','🥺','😎','🤔','👍','👋','🎉','🔥','❤️','💯','😅','🙏','😭','🥳','😡','🤯','💪','🎶','🌟','✨','🚀','🤝','😴','🍕','🍺','🎮','📱','💻'];
 function initEmoji() {
   const bar = $('emoji-bar');
@@ -1060,20 +1016,17 @@ function initEmoji() {
 window.toggleEmoji = () => $('emoji-bar').classList.toggle('hidden');
 window.closeEmoji = () => $('emoji-bar').classList.add('hidden');
 
-// ── modals ──
 window.closeModal = id => $(id).classList.add('hidden');
 document.querySelectorAll('.modal-overlay').forEach(m=>{
   m.addEventListener('click', e=>{ if(e.target===m) m.classList.add('hidden'); });
 });
 
-// ── service worker ──
 async function registerSW() {
   if('serviceWorker' in navigator) {
     try { await navigator.serviceWorker.register('sw.js'); } catch(e){}
   }
 }
 
-// ── mobile back ──
 window.addEventListener('popstate', ()=>{
   if(window.innerWidth<=768) $('sidebar').classList.remove('hidden-mobile');
 });
