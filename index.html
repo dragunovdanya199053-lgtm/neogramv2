@@ -57,21 +57,7 @@
   .ng-input::placeholder{color:var(--text2);}
   .ng-btn{width:100%;padding:.85rem;border-radius:12px;font-family:var(--font-main);font-weight:700;font-size:.95rem;cursor:pointer;border:none;transition:.2s;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
   .ng-btn:hover{opacity:.9;transform:translateY(-1px);}
-  .ng-btn:active{transform:translateY(0);}
-  .ng-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-
-  /* LAYOUT */
-  #app{display:none;height:100dvh;flex-direction:column;}
-  #app.visible{display:flex;}
-  .app-layout{display:flex;flex:1;overflow:hidden;}
-  
-  /* SIDEBAR */
-  #sidebar{width:320px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:.3s;}
-  .sidebar-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:.75rem;border-bottom:1px solid var(--border);}
   .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0;color:#fff;}
-  .search-box{display:flex;align-items:center;gap:.5rem;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:.5rem .75rem;margin:.75rem 1rem;}
-  .search-box input{background:transparent;border:none;color:var(--text);font-family:var(--font-main);font-size:.9rem;outline:none;flex:1;}
-  .search-box input::placeholder{color:var(--text2);}
   .chat-list{flex:1;overflow-y:auto;}
   .chat-item{display:flex;align-items:center;gap:.75rem;padding:.85rem 1.25rem;cursor:pointer;border-bottom:1px solid rgba(37,45,61,.5);transition:.15s;position:relative;}
   .chat-item:hover,.chat-item.active{background:var(--bg3);}
@@ -80,21 +66,6 @@
   .chat-item .preview{color:var(--text2);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.15rem;}
   .chat-item .time{font-size:.72rem;color:var(--text2);font-family:var(--font-mono);}
   .badge{background:var(--accent);color:#fff;border-radius:999px;font-size:.65rem;font-weight:700;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 5px;font-family:var(--font-mono);}
-  .sidebar-nav{border-top:1px solid var(--border);padding:.75rem;display:flex;gap:.5rem;}
-  .nav-btn{flex:1;padding:.6rem;border-radius:10px;background:transparent;border:none;color:var(--text2);cursor:pointer;font-size:1rem;transition:.2s;}
-  .nav-btn:hover,.nav-btn.active{background:var(--bg3);color:var(--accent);}
-  
-  /* CHAT AREA */
-  #chat-area{flex:1;display:flex;flex-direction:column;background:var(--bg);position:relative;overflow:hidden;}
-  .chat-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;color:var(--text2);}
-  .chat-placeholder .icon{font-size:3rem;opacity:.3;}
-  #chat-header{padding:.85rem 1.25rem;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:.75rem;}
-  #chat-header .info{flex:1;}
-  #chat-header .name{font-weight:700;font-size:1rem;}
-  #chat-header .status{font-size:.75rem;color:var(--green);font-family:var(--font-mono);}
-  #messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.5rem;}
-  
-  /* MESSAGES */
   .msg{display:flex;flex-direction:column;max-width:72%;position:relative;}
   .msg.mine{align-self:flex-end;align-items:flex-end;}
   .msg.other{align-self:flex-start;align-items:flex-start;}
@@ -116,8 +87,6 @@
   .msg-file .file-size{font-size:.7rem;color:var(--text2);font-family:var(--font-mono);}
   .date-sep{text-align:center;margin:.75rem 0;}
   .date-sep span{background:var(--bg2);border:1px solid var(--border);border-radius:999px;padding:.25rem .85rem;font-size:.72rem;color:var(--text2);font-family:var(--font-mono);}
-  
-  /* INPUT */
   #input-area{padding:.75rem 1rem;background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:flex-end;gap:.6rem;}
   .attach-btn,#send-btn,#mic-btn{width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;}
   .attach-btn{background:var(--bg3);color:var(--text2);}
@@ -130,38 +99,26 @@
   #msg-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:.65rem 1rem;color:var(--text);font-family:var(--font-main);font-size:.92rem;outline:none;resize:none;max-height:120px;min-height:40px;line-height:1.5;transition:.2s;}
   #msg-input:focus{border-color:var(--accent);}
   #msg-input::placeholder{color:var(--text2);}
-  
-  /* ATTACH MENU */
   .attach-menu{position:absolute;bottom:70px;left:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:.5rem;display:none;flex-direction:column;gap:.25rem;z-index:10;box-shadow:0 8px 32px rgba(0,0,0,.4);}
   .attach-menu.open{display:flex;}
   .attach-opt{display:flex;align-items:center;gap:.75rem;padding:.65rem .9rem;border-radius:12px;cursor:pointer;transition:.15s;font-size:.9rem;}
   .attach-opt:hover{background:var(--bg3);}
   .attach-opt .ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  
-  /* MODALS */
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;}
   .modal-overlay.hidden{display:none;}
   .modal{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:1.5rem;width:100%;max-width:440px;position:relative;}
   .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
   .modal-title{font-weight:700;font-size:1.05rem;}
   .modal-close{background:var(--bg3);border:none;color:var(--text2);width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-  
-  /* USER LIST */
   .user-item{display:flex;align-items:center;gap:.75rem;padding:.75rem;border-radius:12px;cursor:pointer;transition:.15s;}
   .user-item:hover{background:var(--bg3);}
   .online-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;}
-  
-  /* IMAGE VIEWER */
   #img-viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;display:flex;align-items:center;justify-content:center;}
   #img-viewer.hidden{display:none;}
   #img-viewer img{max-width:95vw;max-height:95vh;border-radius:12px;}
   #img-viewer .close-btn{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.1rem;}
-  
-  /* TOAST */
   #toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(2rem);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:.7rem 1.25rem;font-size:.85rem;z-index:500;opacity:0;transition:.3s;white-space:nowrap;pointer-events:none;max-width:90vw;}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  
-  /* RECORDING UI */
   .rec-bar{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:var(--bg2);border-top:1px solid var(--red);}
   .rec-time{font-family:var(--font-mono);font-size:.9rem;color:var(--red);}
   .rec-wave{flex:1;height:24px;display:flex;align-items:center;gap:2px;}
@@ -657,40 +614,12 @@ function appendMessage(data, id) {
   wrapper.id = 'msg-'+id;
 
   let content = '';
-  if(data.type==='text') {
-    content = `<div class="msg-bubble">${escHtml(data.text)}</div>`;
-  } else if(data.type==='image') {
-    content = `<div class="msg-bubble" style="padding:.4rem"><img class="msg-img" src="${data.url}" alt="фото" onclick="openViewer('${data.url}')"/></div>`;
-  } else if(data.type==='audio') {
-    content = `<div class="msg-bubble" style="padding:.4rem">
-      <div class="msg-audio">
-        <button onclick="playAudio('${data.url}',this)"><i class="fa fa-play"></i></button>
-        <div class="audio-wave"></div>
-        <span class="audio-time">${data.duration||'0:00'}</span>
-      </div>
-    </div>`;
-  } else if(data.type==='file') {
-    content = `<div class="msg-bubble" style="padding:.4rem">
-      <a class="msg-file" href="${data.url}" target="_blank" download="${data.fileName}">
-        <div class="file-icon"><i class="fa fa-file"></i></div>
-        <div class="file-info">
-          <div class="file-name">${escHtml(data.fileName||'Файл')}</div>
-          <div class="file-size">${fmtSize(data.fileSize||0)}</div>
-        </div>
-        <i class="fa fa-download" style="color:var(--text2)"></i>
-      </a>
-    </div>`;
-  } else if(data.type==='location') {
-    content = `<div class="msg-bubble">
-      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem"><i class="fa fa-location-dot" style="color:var(--red)"></i><b>Геопозиция</b></div>
-      <a href="https://maps.google.com/?q=${data.lat},${data.lng}" target="_blank" style="color:var(--accent);font-size:.82rem;font-family:var(--font-mono)">${data.lat.toFixed(5)}, ${data.lng.toFixed(5)}</a>
-    </div>`;
-  }
+  if(data.type==='text') content = `<div class="msg-bubble">${escHtml(data.text)}</div>`;
+  else if(data.type==='image') content = `<div class="msg-bubble" style="padding:.4rem"><img class="msg-img" src="${data.url}" alt="фото" onclick="openViewer('${data.url}')"/></div>`;
+  else if(data.type==='audio') content = `<div class="msg-bubble" style="padding:.4rem"><div class="msg-audio"><button onclick="playAudio('${data.url}',this)"><i class="fa fa-play"></i></button><div class="audio-wave"></div><span class="audio-time">${data.duration||'0:00'}</span></div></div>`;
+  else if(data.type==='file') content = `<div class="msg-bubble" style="padding:.4rem"><a class="msg-file" href="${data.url}" target="_blank" download="${data.fileName}"><div class="file-icon"><i class="fa fa-file"></i></div><div class="file-info"><div class="file-name">${escHtml(data.fileName||'Файл')}</div><div class="file-size">${fmtSize(data.fileSize||0)}</div></div><i class="fa fa-download" style="color:var(--text2)"></i></a></div>`;
 
-  const meta = `<div class="msg-meta">
-    <span>${fmtTime(ts)}</span>
-    ${mine?`<i class="fa fa-check-double msg-tick"></i>`:''}
-  </div>`;
+  const meta = `<div class="msg-meta"><span>${fmtTime(ts)}</span>${mine?`<i class="fa fa-check-double msg-tick"></i>`:''}</div>`;
   wrapper.innerHTML = content + meta;
   $('messages').appendChild(wrapper);
 }
@@ -717,11 +646,10 @@ window.sendMessage = async () => {
 
 async function pushMessage(data, preview='') {
   if(!currentChatId) return;
-  const chatRef = doc(db,'chats',currentChatId);
   await addDoc(collection(db,'chats',currentChatId,'messages'), data);
   const otherId = currentChatUser.id;
   const unreadField = `unread.${otherId}`;
-  await updateDoc(chatRef,{
+  await updateDoc(doc(db,'chats',currentChatId),{
     lastMessage: preview.length>60?preview.slice(0,60)+'…':preview||'Вложение',
     lastMessageAt: serverTimestamp(),
     [unreadField]: (allChats.find(c=>c.id===currentChatId)?.unread?.[otherId]||0)+1
@@ -773,7 +701,7 @@ window.uploadFile = async (input, type) => {
     toast('Файл отправлен');
   } catch(e) {
     console.error('Ошибка загрузки:', e);
-    toast('Ошибка загрузки: ' + (e.message || 'Проверьте Firebase Storage'));
+    toast('Ошибка загрузки: ' + (e.message || 'Проверьте Firebase Storage правила'));
   }
   input.value = '';
 };
@@ -899,7 +827,7 @@ window.searchUsers = async val => {
           lastMessageAt:serverTimestamp(),
           unread:{}
         });
-        loadChats();
+        loadChats();   // ← КРИТИЧНО
       }
       await openChat(cid, u.uid, u);
     };
